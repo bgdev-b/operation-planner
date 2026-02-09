@@ -1,0 +1,36 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/bgdev-b/operation-planner#readme",
+  "bugs": {
+    "url": "https://github.com/bgdev-b/operation-planner/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bgdev-b/operation-planner.git"
+  },
+  "license": "ISC",
+  "author": "Bryant",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.0",
+    "@types/supertest": "^6.0.3",
+    "supertest": "^7.2.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "express": "^5.2.1",
+    "zod": "^4.3.6"
+  }
+}
