@@ -1,38 +1,38 @@
 # Operation Planner Backend
 
-API backend para la gestión de asignaciones de tareas y recursos con validación de conflictos.
+Backend API for managing task assignments and resources with conflict validation.
 
-## Características
+## Features
 
-- ✅ Gestión de tareas y recursos
-- ✅ Asignación inteligente de recursos a tareas
-- ✅ Validación de disponibilidad de recursos
-- ✅ Detección de conflictos de solapamiento
-- ✅ Persistencia en base de datos SQLite
-- ✅ API REST con Express.js
-- ✅ TypeScript para seguridad de tipos
-- ✅ Suite de pruebas unitarias
+- ✅ Task and resource management
+- ✅ Intelligent resource-to-task assignment
+- ✅ Resource availability validation
+- ✅ Overlap conflict detection
+- ✅ SQLite database persistence
+- ✅ REST API with Express.js
+- ✅ TypeScript for type safety
+- ✅ Comprehensive unit test suite
 
 ## Prerequisites
 
 - Node.js 16+
-- npm o yarn
+- npm or yarn
 
-## Instalación
+## Installation
 
 ```bash
 npm install
 ```
 
-## Desarrollo
+## Development
 
-Compilar TypeScript:
+Compile TypeScript:
 
 ```bash
 npm run build
 ```
 
-Ejecutar en modo desarrollo:
+Run in development mode:
 
 ```bash
 npm start
@@ -40,50 +40,50 @@ npm start
 
 ## Testing
 
-Ejecutar las pruebas unitarias:
+Run unit tests:
 
 ```bash
 npm test
 ```
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 src/
-├── index.ts                    # Punto de entrada
-├── domain/                     # Lógica de negocio
-│   ├── models/                # Tipos y interfaces
-│   ├── db/                    # Acceso a datos
-│   ├── http/                  # Rutas y DTOs
-│   └── __tests__/            # Pruebas unitarias
+├── index.ts                    # Entry point
+├── domain/                     # Business logic
+│   ├── models/                # Types and interfaces
+│   ├── db/                    # Data access
+│   ├── http/                  # Routes and DTOs
+│   └── __tests__/            # Unit tests
 ```
 
 ## API Endpoints
 
 ### Assignments
-- `POST /assignments` - Crear nueva asignación
-- `GET /assignments` - Listar asignaciones
-- `GET /assignments/:id` - Obtener asignación específica
+- `POST /assignments` - Create new assignment
+- `GET /assignments` - List all assignments
+- `GET /assignments/:id` - Get specific assignment
 
 ### Resources
-- `GET /resources` - Listar recursos disponibles
-- `GET /resources/:id` - Obtener recurso específico
+- `GET /resources` - List available resources
+- `GET /resources/:id` - Get specific resource
 
-## Validaciones
+## Validations
 
-El sistema realiza las siguientes validaciones:
+The system performs the following validations:
 
-1. **Disponibilidad de Recursos**: Verifica que el recurso esté disponible en la fecha de la tarea
-2. **Solapamiento de Tareas**: Detecta si el recurso ya tiene asignaciones en ese período
-3. **Reglas de Negocio**: Valida reglas específicas de asignación
+1. **Resource Availability**: Verifies that the resource is available on the task date
+2. **Task Overlap**: Detects if the resource already has assignments in that period
+3. **Business Rules**: Validates specific assignment rules
 
-## Tecnologías
+## Technologies
 
-- **TypeScript** - Lenguaje de programación tipado
-- **Express.js** - Framework web
-- **SQLite** - Base de datos
-- **Jest** - Framework de testing
+- **TypeScript** - Typed programming language
+- **Express.js** - Web framework
+- **SQLite** - Database
+- **Jest** - Testing framework
 
-## Licencia
+## License
 
 MIT
