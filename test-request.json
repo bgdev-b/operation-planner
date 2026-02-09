@@ -1,0 +1,25 @@
+{
+    "resource": {
+        "id": "r1",
+        "availability": [
+            {
+                "start": "2026-02-03T08:00:00Z",
+                "end": "2026-02-03T17:00:00Z"
+            }
+        ]
+    },
+    "existingAssignment": [
+        {
+            "taskId": "t1",
+            "resourceId": "r1",
+            "start": "2026-02-03T10:00:00Z",
+            "end": "2026-02-03T12:00:00Z"
+        }
+    ],
+    "newAssignment": {
+        "taskId": "t2",
+        "resourceId": "r1",
+        "start": "2026-02-03T11:00:00Z",
+        "end": "2026-02-03T18:00:00Z"
+    }
+}
