@@ -1,14 +1,29 @@
 import { Assignment } from './Assignment.js';
 import { Conflict } from './Conflict.js';
-import { Resource } from './Resource.js';
+import { TimeRange } from './TimeRange.js';
+
+export function detectInvalidTimeRange(
+    assignment: Assignment
+): Conflict | null {
+
+    if (assignment.start >= assignment.end) {
+        return {
+            type: 'INVALID_TIME_RANGE',
+            resourceId: assignment.resourceId,
+            taskId: assignment.taskId,
+            message: 'Start time must be before end time'
+        };
+    }
+
+    return null;
+}
 
 export function detectOverlappingAssignment(
-    resource: Resource,
-    existingAssignments: Assignment[],
+    existingAssignment: TimeRange[],
     newAssignment: Assignment
 ): Conflict | null {
-    const overlaps = existingAssignments.some(a =>
-        a.resourceId === resource.id &&
+
+    const overlaps = existingAssignment.some(a =>
         newAssignment.start < a.end &&
         newAssignment.end > a.start
     );
@@ -16,33 +31,33 @@ export function detectOverlappingAssignment(
     if (overlaps) {
         return {
             type: 'OVERLAPPING_ASSIGNMENT',
-            resourceId: resource.id,
+            resourceId: newAssignment.resourceId,
             taskId: newAssignment.taskId,
             message: 'Resource is already assigned in this time range'
         };
     }
 
     return null;
-};
+}
 
 export function detectUnavailability(
-    resource: Resource,
+    AvailabilitySlot: TimeRange[],
     newAssignment: Assignment
 ): Conflict | null {
-    const isAvailable = resource.availability.some(
-        range => newAssignment.start >= range.start &&
-            newAssignment.end <= range.end
+
+    const isAvailable = AvailabilitySlot.some(slot =>
+        newAssignment.start >= slot.start &&
+        newAssignment.end <= slot.end
     );
 
     if (!isAvailable) {
         return {
             type: 'RESOURCE_UNAVAILABLE',
-            resourceId: resource.id,
+            resourceId: newAssignment.resourceId,
             taskId: newAssignment.taskId,
-            message: 'Resource is out of range'
+            message: 'Assignment is outside resource availability'
         };
     }
 
     return null;
-};
-
+}   

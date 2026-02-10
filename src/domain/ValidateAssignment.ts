@@ -1,36 +1,38 @@
 import { Assignment } from "./Assignment.js";
-import { Resource } from "./Resource.js";
 import { Conflict } from "./Conflict.js";
 import { ValidationResult } from "./ValidationResult.js";
-import { detectOverlappingAssignment, detectUnavailability } from "./Rules.js";
+import {
+    detectInvalidTimeRange,
+    detectOverlappingAssignment,
+    detectUnavailability
+} from "./Rules.js";
+import { TimeRange } from "./TimeRange.js";
+
 
 export function validateAssignment(
-    resource: Resource,
-    existingAssignments: Assignment[],
+    availabilitySlot: TimeRange[],
+    existingAssignment: TimeRange[],
     newAssignment: Assignment
 ): ValidationResult {
+
     const conflicts: Conflict[] = [];
 
+    const invalidRange = detectInvalidTimeRange(newAssignment);
+    if (invalidRange) conflicts.push(invalidRange);
+
     const overlapConflict = detectOverlappingAssignment(
-        resource,
-        existingAssignments,
+        existingAssignment,
         newAssignment
     );
-    if (overlapConflict) {
-        conflicts.push(overlapConflict);
-    }
+    if (overlapConflict) conflicts.push(overlapConflict);
 
     const unavailabilityConflict = detectUnavailability(
-        resource,
+        availabilitySlot,
         newAssignment
     );
-    if (unavailabilityConflict) {
-        conflicts.push(unavailabilityConflict)
-    }
+    if (unavailabilityConflict) conflicts.push(unavailabilityConflict);
 
-    if (conflicts.length > 0) {
-        return { valid: false, conflicts };
-    }
-
-    return { valid: true }
+    return conflicts.length > 0
+        ? { valid: false, conflicts }
+        : { valid: true };
 }

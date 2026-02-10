@@ -1,15 +1,8 @@
 
-
-export type ResourceType = 'person' | 'room' | 'machine';
-
-export type TimeRange = {
-    start: Date;
-    end: Date;
-};
+export type ResourceType = 'person' | 'room' | 'equipment';
 
 export type Resource = {
     id: string;
     name: string;
     type: ResourceType;
-    availability: TimeRange[];
 }
