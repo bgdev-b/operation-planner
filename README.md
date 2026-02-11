@@ -1,89 +1,33 @@
-# Operation Planner Backend
+# Operation Planner
 
-Backend API for managing task assignments and resources with conflict validation.
+Sistema de planificación y asignación de operaciones con gestión de recursos y disponibilidad.
 
-## Features
+## Estructura del Proyecto
 
-- ✅ Task and resource management
-- ✅ Intelligent resource-to-task assignment
-- ✅ Resource availability validation
-- ✅ Overlap conflict detection
-- ✅ SQLite database persistence
-- ✅ REST API with Express.js
-- ✅ TypeScript for type safety
-- ✅ Comprehensive unit test suite
+Este es un monorepo que contiene:
 
-## Prerequisites
+- **`server/`** - Backend API (Node.js + TypeScript + Express)
+- **`client/`** - Frontend (próximamente)
 
-- Node.js 16+
-- npm or yarn
+## Desarrollo
 
-## Installation
+Cada carpeta contiene su propio README con instrucciones específicas de configuración y ejecución.
+
+### Server (Backend)
 
 ```bash
+cd server
 npm install
+npm run dev
 ```
 
-## Development
+Ver [server/README.md](server/README.md) para más detalles.
 
-Compile TypeScript:
+### Client (Frontend)
 
-```bash
-npm run build
-```
+_Próximamente..._
 
-Run in development mode:
+## Tecnologías
 
-```bash
-npm start
-```
-
-## Testing
-
-Run unit tests:
-
-```bash
-npm test
-```
-
-## Project Structure
-
-```
-src/
-├── index.ts                    # Entry point
-├── domain/                     # Business logic
-│   ├── models/                # Types and interfaces
-│   ├── db/                    # Data access
-│   ├── http/                  # Routes and DTOs
-│   └── __tests__/            # Unit tests
-```
-
-## API Endpoints
-
-### Assignments
-- `POST /assignments` - Create new assignment
-- `GET /assignments` - List all assignments
-- `GET /assignments/:id` - Get specific assignment
-
-### Resources
-- `GET /resources` - List available resources
-- `GET /resources/:id` - Get specific resource
-
-## Validations
-
-The system performs the following validations:
-
-1. **Resource Availability**: Verifies that the resource is available on the task date
-2. **Task Overlap**: Detects if the resource already has assignments in that period
-3. **Business Rules**: Validates specific assignment rules
-
-## Technologies
-
-- **TypeScript** - Typed programming language
-- **Express.js** - Web framework
-- **SQLite** - Database
-- **Jest** - Testing framework
-
-## License
-
-MIT
+- **Backend**: TypeScript, Express, SQLite, Vitest
+- **Frontend**: _Por definir_
