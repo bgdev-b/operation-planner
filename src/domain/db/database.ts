@@ -2,7 +2,13 @@ import type { Database } from 'better-sqlite3';
 import * as BetterSqlite3 from 'better-sqlite3';
 
 const DatabaseConstructor = BetterSqlite3.default;
-export const db: Database = new DatabaseConstructor('planner.db');
+
+// Use in-memory database for tests, file database for production
+const dbPath = process.env.VITEST || process.env.NODE_ENV === 'test'
+    ? ':memory:'
+    : 'planner.db';
+
+export const db: Database = new DatabaseConstructor(dbPath);
 
 db.pragma('foreign_keys = ON');
 
@@ -32,5 +38,11 @@ db.exec(`
         REFERENCES resources(id)
         ON DELETE CASCADE
     );
+
+    CREATE INDEX IF NOT EXISTS idx_assignments_resource_start_end
+    ON assignments(resource_id, start, end);
+
+    CREATE INDEX IF NOT EXISTS idx_availability_resource_start
+    ON resource_availability(resource_id, start);
     `);
 

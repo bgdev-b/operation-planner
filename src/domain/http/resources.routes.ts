@@ -1,15 +1,20 @@
 import { Router } from "express";
-import { createResourceSchema } from "./dto/createResource.schema.js";
-import { saveResource } from "../db/resourceRepository.js";
-import { getResourceById } from "../db/resourceRepository.js";
-import z from "zod";
+import { z } from "zod";
+import { getResourceById, getAllResources, saveResource } from "../db/resourceRepository.js";
 import { getAvailabilityByResource } from "../db/availabilityRepository.js";
+import { freeSlotQuerySchema } from "./dto/freeSlotQuery.schema.js";
 import { getAssignmentForResource } from "../db/assignmentRepository.js";
+import { calculateAvailability } from "../CalculateAvailability.js";
+import { createResourceSchema } from "./dto/createResource.schema.js";
 
 export const resourceRouter = Router();
 
-resourceRouter.post('/', (req, res) => {
+resourceRouter.get("/", (_req, res) => {
+    const resources = getAllResources();
+    return res.json(resources);
+});
 
+resourceRouter.post("/", (req, res) => {
     const parsed = createResourceSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -19,44 +24,51 @@ resourceRouter.post('/', (req, res) => {
         });
     }
 
-    const { id, type, name } = parsed.data;
-
-    const existing = getResourceById(id);
-    if (existing) {
-        return res.status(409).json({
-            error: 'Resource already exists'
-        });
-    }
-
-    saveResource({
-        id,
-        name,
-        type
-    });
-
-    return res.status(201).json({
-        id,
-        name,
-        type
-    });
+    saveResource(parsed.data);
+    return res.status(201).json(parsed.data);
 });
 
-resourceRouter.get('/:id', (req, res) => {
+resourceRouter.get<{ id: string }>("/:id", (req, res) => {
+
     const { id } = req.params;
 
     const resource = getResourceById(id);
     if (!resource) {
         return res.status(404).json({
-            error: 'Resource not found'
+            error: "Resource not found"
         });
     }
 
+    const parsed = freeSlotQuerySchema.safeParse(req.query);
+
+    if (!parsed.success) {
+        return res.status(400).json({
+            error: "Invalid query parameters"
+        });
+    }
+
+    const from = new Date(parsed.data.from);
+    const to = new Date(parsed.data.to);
+
     const availability = getAvailabilityByResource(id);
-    const assignment = getAssignmentForResource(id);
+
+    const assignments = getAssignmentForResource(
+        id,
+        from,
+        to
+    );
+
+    const freeSlots = calculateAvailability(
+        availability,
+        assignments,
+        from,
+        to
+    );
 
     return res.json({
         ...resource,
         availability,
-        assignment
+        assignments,
+        freeSlots
     });
 });

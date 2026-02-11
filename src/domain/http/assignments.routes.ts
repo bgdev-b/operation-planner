@@ -10,39 +10,43 @@ import { getAvailabilityByResource } from "../db/availabilityRepository.js";
 
 export const assignmentRouter = Router();
 
-assignmentRouter.post('/', (req, res) => {
-    const parsed = assignmentDtoSchema.safeParse(req.body);
+assignmentRouter.post('/', (req, res, next) => {
+    try {
+        const parsed = assignmentDtoSchema.safeParse(req.body);
 
-    if (!parsed.success) {
-        return res.status(400).json({
-            error: 'Invalid input',
-            details: z.treeifyError(parsed.error)
-        });
+        if (!parsed.success) {
+            return res.status(400).json({
+                error: 'Invalid input',
+                details: z.treeifyError(parsed.error)
+            });
+        }
+
+        const assignment = toAssignment(parsed.data);
+
+        const resource = getResourceById(assignment.resourceId);
+        if (!resource) {
+            return res.status(404).json({
+                error: 'Resource not found'
+            });
+        }
+
+        const existingAssignment = getAssignmentForResource(resource.id);
+        const availabilitySlot = getAvailabilityByResource(resource.id);
+
+        const result = validateAssignment(
+            availabilitySlot,
+            existingAssignment,
+            assignment
+        );
+
+        if (!result.valid) {
+            return res.status(409).json(result);
+        }
+
+        saveAssignment(assignment);
+
+        return res.status(201).json({ success: true });
+    } catch (error) {
+        return next(error);
     }
-
-    const assignment = toAssignment(parsed.data);
-
-    const resource = getResourceById(assignment.resourceId);
-    if (!resource) {
-        return res.status(404).json({
-            error: 'Resource not found'
-        });
-    }
-
-    const existingAssignment = getAssignmentForResource(resource.id);
-    const availabilitySlot = getAvailabilityByResource(resource.id);
-
-    const result = validateAssignment(
-        availabilitySlot,
-        existingAssignment,
-        assignment
-    );
-
-    if (!result.valid) {
-        return res.status(409).json(result);
-    }
-
-    saveAssignment(assignment);
-
-    return res.status(201).json({ success: true });
 })

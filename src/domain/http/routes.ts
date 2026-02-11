@@ -6,6 +6,6 @@ import { availabilityRouter } from "./availability.routes.js";
 export const router = Router();
 
 router.use('/resource', resourceRouter);
+router.use('/resource', availabilityRouter);
 router.use('/assignments', assignmentRouter);
-router.use('/availability', availabilityRouter);
 

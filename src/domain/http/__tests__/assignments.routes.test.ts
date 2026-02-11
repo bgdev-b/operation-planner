@@ -42,7 +42,6 @@ describe('POST /api/assignments', () => {
     });
 
     it('reject assignment with overlapping time slot', async () => {
-        // Create existing assignment
         saveAssignment({
             taskId: 't1',
             resourceId: 'r1',
@@ -50,7 +49,6 @@ describe('POST /api/assignments', () => {
             end: new Date('2026-02-03T12:00:00Z')
         });
 
-        // Try to create overlapping assignment
         const response = await request(app)
             .post('/api/assignments')
             .send({
@@ -67,9 +65,9 @@ describe('POST /api/assignments', () => {
     });
 
     it('reject assignment outside resource availability', async () => {
-        // Update resource with availability window
         db.exec('DELETE FROM resource_availability');
         db.exec('DELETE FROM resources');
+
         saveResource({
             id: 'r2',
             name: 'Bob',
@@ -81,7 +79,6 @@ describe('POST /api/assignments', () => {
             new Date('2026-02-03T08:00:00Z'),
             new Date('2026-02-03T17:00:00Z')
         );
-
 
         const response = await request(app)
             .post('/api/assignments')
@@ -99,9 +96,9 @@ describe('POST /api/assignments', () => {
     });
 
     it('reject assignment with multiple conflicts', async () => {
-
         db.exec('DELETE FROM resource_availability');
         db.exec('DELETE FROM resources');
+
         saveResource({
             id: 'r3',
             name: 'Charlie',
