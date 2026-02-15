@@ -6,8 +6,12 @@ import { freeSlotQuerySchema } from "./dto/freeSlotQuery.schema.js";
 import { getAssignmentForResource } from "../db/assignmentRepository.js";
 import { calculateAvailability } from "../CalculateAvailability.js";
 import { createResourceSchema } from "./dto/createResource.schema.js";
+import { availabilityRouter } from "./availability.routes.js";
+
 
 export const resourceRouter = Router();
+
+resourceRouter.use('/:id/availability', availabilityRouter);
 
 resourceRouter.get("/", (_req, res) => {
     const resources = getAllResources();
@@ -39,11 +43,17 @@ resourceRouter.get<{ id: string }>("/:id", (req, res) => {
         });
     }
 
+    return res.json(resource);
+});
+
+resourceRouter.get<{ id: string }>('/:id/free-slots', (req, res) => {
+    const { id } = req.params;
+
     const parsed = freeSlotQuerySchema.safeParse(req.query);
 
     if (!parsed.success) {
         return res.status(400).json({
-            error: "Invalid query parameters"
+            error: 'Invalid query parameters'
         });
     }
 
@@ -66,7 +76,6 @@ resourceRouter.get<{ id: string }>("/:id", (req, res) => {
     );
 
     return res.json({
-        ...resource,
         availability,
         assignments,
         freeSlots
