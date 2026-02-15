@@ -9,7 +9,6 @@ export function createApp() {
     app.use(express.json());
     app.use('/api', router);
 
-    // Error handler middleware
     app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
         console.error('Error:', err);
         res.status(500).json({ error: err.message, stack: err.stack });

@@ -30,7 +30,7 @@ export function getAssignmentForResource(
     from?: Date,
     to?: Date
 ): Assignment[] {
-    if (from && to) {
+    if (from !== undefined && to !== undefined) {
         const rows = db.prepare<
             [string, string, string],
             AssignmentRow
@@ -57,7 +57,6 @@ export function getAssignmentForResource(
         }));
     }
 
-    // If no date range specified, return all assignments for the resource
     const rows = db.prepare<
         [string],
         AssignmentRow
