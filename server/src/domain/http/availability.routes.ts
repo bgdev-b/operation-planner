@@ -6,9 +6,9 @@ import { createAvailabilitySchema } from "./dto/createAvailability.schema.js";
 import { detectInvalidTimeRange } from "../Rules.js";
 
 
-export const availabilityRouter = Router();
+export const availabilityRouter = Router({ mergeParams: true });
 
-availabilityRouter.post('/:id/availability', (req, res) => {
+availabilityRouter.post<{ id: string }>('/', (req, res) => {
 
     const parsed = createAvailabilitySchema.safeParse(req.body);
 
