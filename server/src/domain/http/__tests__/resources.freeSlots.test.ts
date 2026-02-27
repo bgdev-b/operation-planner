@@ -39,6 +39,6 @@ describe('GET /api/resources/:id/free-slots', () => {
                 to: '2026-02-04T00:00:00Z'
             });
         expect(response.status).toBe(200);
-        expect(response.body.freeSlots.length).toBe(2);
+        expect(response.body.freeSlot.length).toBe(2);
     });
 });
