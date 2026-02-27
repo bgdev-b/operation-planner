@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+
 import { Routes, Route } from 'react-router';
 import { ResourcePage } from './pages/ResourcesPage';
 import './App.css';

@@ -1,0 +1,106 @@
+.gantt-wrapper {
+    position: relative;
+    padding-top: 20px;
+}
+
+.now-label-above {
+    position: absolute;
+    top: 0;
+    font-size: 10px;
+    background: #ff3b30;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    z-index: 30;
+    pointer-events: none;
+}
+
+.gantt-container {
+    position: relative;
+    width: 100%;
+    height: 110px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    overflow-x: auto;
+}
+
+.gantt-inner {
+    position: relative;
+    height: 110px;
+}
+
+.gantt-track {
+    position: absolute;
+    top: 44px;
+    height: 35px;
+    width: 100%;
+}
+
+.timescale {
+    position: relative;
+    height: 40px;
+    border-bottom: 1px solid #ddd;
+    padding-top: 8px;
+    width: 100%;
+}
+
+.grid-layer {
+    position: absolute;
+    top: 40px;
+    bottom: 0;
+    width: 100%;
+}
+
+.gantt-track,
+.timescale,
+.grid-layer {
+    min-width: 1200px;
+}
+
+
+.tick {
+    position: absolute;
+    top: 0;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+
+
+.grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #eee;
+}
+
+
+
+.gantt-availability {
+    position: absolute;
+    height: 100%;
+    background: #c8e6c9;
+    border: 1px solid #426e44;
+    border-radius: 4px;
+}
+
+.gantt-assignment {
+    position: absolute;
+    height: 100%;
+    background: #e03f3c;
+    border: 1px solid #520000;
+    border-radius: 4px;
+}
+
+.now-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ff3b30;
+    z-index: 20;
+    box-shadow: 0 0 6px rgba(255, 59, 48, 0.5);
+}
