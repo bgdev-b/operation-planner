@@ -7,6 +7,7 @@ import { getAssignmentForResource } from "../db/assignmentRepository.js";
 import { calculateAvailability } from "../CalculateAvailability.js";
 import { createResourceSchema } from "./dto/createResource.schema.js";
 import { availabilityRouter } from "./availability.routes.js";
+import { calculateAvailabilityAnalytics } from "../AvailabilityAnalytics.js";
 
 
 export const resourceRouter = Router();
@@ -48,6 +49,7 @@ resourceRouter.get<{ id: string }>("/:id", (req, res) => {
 
 resourceRouter.get<{ id: string }>('/:id/free-slots', (req, res) => {
     const { id } = req.params;
+    const resource = getResourceById(id);
 
     const parsed = freeSlotQuerySchema.safeParse(req.query);
 
@@ -68,16 +70,23 @@ resourceRouter.get<{ id: string }>('/:id/free-slots', (req, res) => {
         to
     );
 
-    const freeSlots = calculateAvailability(
+    const { freeSlot, clippedAvailability } = calculateAvailability(
         availability,
         assignments,
         from,
         to
     );
 
+    const analytics = calculateAvailabilityAnalytics(
+        clippedAvailability,
+        freeSlot
+    )
+
     return res.json({
-        availability,
+        ...resource,
+        availability: clippedAvailability,
         assignments,
-        freeSlots
+        freeSlot,
+        analytics
     });
 });

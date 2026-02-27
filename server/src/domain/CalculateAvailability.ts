@@ -1,51 +1,62 @@
 import { TimeRange } from "./TimeRange.js";
 import { mergeIntervals } from "./MergeIntervals.js";
+import { clipRange } from "./TimeUtils.js";
+
+export type AvailabilityResult = {
+    freeSlot: TimeRange[];
+    clippedAvailability: TimeRange[];
+}
+
 export function calculateAvailability(
     baseAvailability: TimeRange[],
     assignments: TimeRange[],
     from: Date,
     to: Date
-): TimeRange[] {
+): AvailabilityResult {
+
 
     const normalizedAvailability = mergeIntervals(baseAvailability);
 
     const clippedAvailability = normalizedAvailability
-        .map(range => ({
-            start: new Date(Math.max(range.start.getTime(), from.getTime())),
-            end: new Date(Math.min(range.end.getTime(), to.getTime())),
-        }))
-        .filter(range => range.start < range.end);
+        .map(slot => clipRange(slot, from, to))
+        .filter((slot): slot is TimeRange => slot !== null);
 
-    const assignmentInRange = assignments
-        .filter(a => a.end > from && a.start < to)
+
+    const clippedAssignments = assignments
+        .map(a => clipRange(a, from, to))
+        .filter((a): a is TimeRange => a !== null)
         .sort((a, b) => a.start.getTime() - b.start.getTime());
 
     const freeSlot: TimeRange[] = [];
 
-    for (const clip of clippedAvailability) {
-        let cursor = clip.start;
+    for (const availability of clippedAvailability) {
 
-        for (const assigned of assignmentInRange) {
-            if (assigned.start > cursor) {
+        let cursor = availability.start;
+
+        for (const assignment of clippedAssignments) {
+
+            if (assignment.start > cursor) {
                 freeSlot.push({
                     start: cursor,
-                    end: assigned.start
+                    end: assignment.start
                 });
             }
 
-            if (assigned.end > cursor) {
-                cursor = assigned.end;
+            if (assignment.end > cursor) {
+                cursor = assignment.end;
             }
         }
 
-        if (cursor < clip.end) {
+        if (cursor < availability.end) {
             freeSlot.push({
                 start: cursor,
-                end: clip.end
+                end: availability.end
             });
         }
     }
 
-    return freeSlot;
-
-} 
+    return {
+        freeSlot,
+        clippedAvailability
+    };
+}
