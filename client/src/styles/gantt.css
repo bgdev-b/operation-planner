@@ -24,6 +24,7 @@
     border: 1px solid #ddd;
     background: #f9f9f9;
     overflow-x: auto;
+    touch-action: pan-x;
 }
 
 .gantt-inner {
@@ -50,6 +51,7 @@
     position: absolute;
     top: 40px;
     bottom: 0;
+    pointer-events: none;
     width: 100%;
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { usePinch } from "@use-gesture/react";
 import type { TimeRange } from "../types/TimeRange";
 import "../styles/gantt.css";
 import { generateTimeTicks } from "../utils/TimeScale";
@@ -27,6 +28,7 @@ export function GanttTimeline({
     const [zoom, setZoom] = useState(1);
     const [scrollLeft, setScrollLeft] = useState(0);
     const containerRef = useRef<HTMLDivElement | null>(null);
+    const zoomRef = useRef(1);
 
     const baseWidth = 1200;
     const timelineWidth = baseWidth * zoom;
@@ -46,11 +48,8 @@ export function GanttTimeline({
         const start = new Date(range.start).getTime();
         const end = new Date(range.end).getTime();
 
-        const left =
-            ((start - from.getTime()) / totalRangeMs) * timelineWidth;
-
-        const width =
-            ((end - start) / totalRangeMs) * timelineWidth;
+        const left = ((start - from.getTime()) / totalRangeMs) * timelineWidth;
+        const width = ((end - start) / totalRangeMs) * timelineWidth;
 
         return { left, width };
     }
@@ -59,6 +58,36 @@ export function GanttTimeline({
         const interval = setInterval(() => setNow(new Date()), 60_000);
         return () => clearInterval(interval);
     }, []);
+
+    const bindPinch = usePinch(
+        ({ origin: [ox], offset: [scale], memo, first, event }) => {
+            event?.preventDefault();
+            if (!containerRef.current) return;
+
+            const initZoom: number = first ? zoomRef.current : memo;
+            const newZoom = Math.min(Math.max(initZoom * scale, 0.5), 5);
+
+            const container = containerRef.current;
+            const { left: rectLeft } = container.getBoundingClientRect();
+            const mouseX = ox - rectLeft;
+            const offsetX = mouseX + container.scrollLeft;
+
+            const prevWidth = baseWidth * zoomRef.current;
+            const newWidth = baseWidth * newZoom;
+            container.scrollLeft = offsetX * (newWidth / prevWidth) - mouseX;
+
+            zoomRef.current = newZoom;
+            setZoom(newZoom);
+
+            return initZoom;
+        },
+        {
+            pinchOnWheel: true,
+            preventDefault: true,
+            pointer: { touch: true },
+            eventOptions: { passive: false }
+        }
+    );
 
     const nowMs = now.getTime();
 
@@ -85,51 +114,29 @@ export function GanttTimeline({
                 </div>
             )}
             <div
+                {...bindPinch()}
                 ref={containerRef}
                 className="gantt-container"
                 onScroll={(e) => setScrollLeft((e.target as HTMLDivElement).scrollLeft)}
-                onWheel={(e) => {
-                    if (e.ctrlKey || !containerRef.current) return;
-
-                    e.preventDefault();
-
-                    const container = containerRef.current;
-
-                    const { left: rectLeft } = container.getBoundingClientRect();
-                    const mouseX = e.clientX - rectLeft;
-
-                    const { scrollLeft } = container;
-                    const offsetX = mouseX + scrollLeft;
-
-                    const zoomFactor = 1 + (e.deltaY * -0.001);
-                    const newZoom = Math.min(Math.max(zoom * zoomFactor, 0.5), 5);
-
-                    const newTimelineWidth = baseWidth * newZoom;
-                    const scale = newTimelineWidth / timelineWidth;
-
-                    container.scrollLeft = offsetX * scale - mouseX;
-
-                    setZoom(newZoom);
-                }}
             >
                 <div
                     className="gantt-inner"
                     style={{
                         width: `${timelineWidth}px`,
                         position: "relative",
-                        paddingRight: "60px"
                     }}
                 >
 
                     <div className="timescale">
-                        {ticks.map((tick) => {
+                        {ticks.map((tick, i) => {
                             const tickLeft = getTickLeft(tick);
-                            const transform =
-                                tickLeft < 30
+                            const isLast = i === ticks.length - 1;
+                            const isFirst = tickLeft < 30;
+                            const transform = isLast
+                                ? "translateX(-100%)"
+                                : isFirst
                                     ? "translateX(0)"
-                                    : tickLeft > timelineWidth - 30
-                                        ? "translateX(-100%)"
-                                        : "translateX(-50%)";
+                                    : "translateX(-50%)";
                             return (
                                 <div
                                     key={tick.toISOString()}

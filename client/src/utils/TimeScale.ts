@@ -29,5 +29,6 @@ export function generateTimeTicks(from: Date, to: Date): Date[] {
         ticks.push(new Date(current));
         current = new Date(current.getTime() + stepMs);
     }
+
     return ticks;
 }
