@@ -20,21 +20,22 @@
 .gantt-container {
     position: relative;
     width: 100%;
-    height: 110px;
+    height: 130px;
     border: 1px solid #ddd;
     background: #f9f9f9;
     overflow-x: auto;
+    overflow-y: hidden;
     touch-action: pan-x;
 }
 
 .gantt-inner {
     position: relative;
-    height: 110px;
+    height: 77px;
 }
 
 .gantt-track {
-    position: absolute;
-    top: 44px;
+    position: relative;
+    top: 1px;
     height: 35px;
     width: 100%;
 }
@@ -87,6 +88,7 @@
     background: #c8e6c9;
     border: 1px solid #426e44;
     border-radius: 4px;
+    display: flex;
 }
 
 .gantt-assignment {
@@ -95,6 +97,17 @@
     background: #e03f3c;
     border: 1px solid #520000;
     border-radius: 4px;
+    cursor: grab;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    z-index: 1;
+    user-select: none;
+}
+
+.gantt-assignment.dragging {
+    z-index: 10;
 }
 
 .now-line {
@@ -105,4 +118,17 @@
     background: #ff3b30;
     z-index: 20;
     box-shadow: 0 0 6px rgba(255, 59, 48, 0.5);
+}
+
+.assignment-label {
+    font-size: 11px;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+    min-width: 0;
 }

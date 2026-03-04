@@ -171,4 +171,56 @@ describe('POST /api/assignments', () => {
         expect(response.status).toBe(400);
         expect(response.body.error).toBe('Invalid input');
     });
+
+    it('moves assignment with PATCH when target slot is valid', async () => {
+        saveAssignment({
+            taskId: 'move-me',
+            resourceId: 'r1',
+            start: new Date('2026-02-03T10:00:00Z'),
+            end: new Date('2026-02-03T11:00:00Z')
+        });
+
+        const response = await request(app)
+            .patch('/api/assignments/move-me')
+            .send({
+                resourceId: 'r1',
+                originalStart: '2026-02-03T10:00:00Z',
+                originalEnd: '2026-02-03T11:00:00Z',
+                start: '2026-02-03T12:00:00Z',
+                end: '2026-02-03T13:00:00Z'
+            });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+    });
+
+    it('rejects PATCH move when it overlaps another assignment', async () => {
+        saveAssignment({
+            taskId: 'move-me',
+            resourceId: 'r1',
+            start: new Date('2026-02-03T10:00:00Z'),
+            end: new Date('2026-02-03T11:00:00Z')
+        });
+
+        saveAssignment({
+            taskId: 'existing',
+            resourceId: 'r1',
+            start: new Date('2026-02-03T12:00:00Z'),
+            end: new Date('2026-02-03T13:00:00Z')
+        });
+
+        const response = await request(app)
+            .patch('/api/assignments/move-me')
+            .send({
+                resourceId: 'r1',
+                originalStart: '2026-02-03T10:00:00Z',
+                originalEnd: '2026-02-03T11:00:00Z',
+                start: '2026-02-03T12:30:00Z',
+                end: '2026-02-03T13:30:00Z'
+            });
+
+        expect(response.status).toBe(409);
+        expect(response.body.valid).toBe(false);
+        expect(response.body.conflicts[0].type).toBe('OVERLAPPING_ASSIGNMENT');
+    });
 });

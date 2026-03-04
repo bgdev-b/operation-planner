@@ -33,7 +33,14 @@ export function calculateAvailability(
 
         let cursor = availability.start;
 
-        for (const assignment of clippedAssignments) {
+        const relevantAssignments = clippedAssignments
+            .filter(a => a.start < availability.end && a.end > availability.start)
+            .map(a => ({
+                start: new Date(Math.max(a.start.getTime(), availability.start.getTime())),
+                end: new Date(Math.min(a.end.getTime(), availability.end.getTime()))
+            }));
+
+        for (const assignment of relevantAssignments) {
 
             if (assignment.start > cursor) {
                 freeSlot.push({

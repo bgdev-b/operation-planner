@@ -76,3 +76,35 @@ export function getAssignmentForResource(
         end: new Date(row.end)
     }));
 }
+
+export function updateAssignmentTime(
+    taskId: string,
+    resourceId: string,
+    originalStart: Date,
+    originalEnd: Date,
+    nextStart: Date,
+    nextEnd: Date
+): boolean {
+    const result = db.prepare<
+        [string, string, string, string, string, string],
+        void
+    >(
+        `
+        UPDATE assignments
+        SET start = ?, end = ?
+        WHERE task_id = ?
+        AND resource_id = ?
+        AND start = ?
+        AND end = ?
+        `
+    ).run(
+        nextStart.toISOString(),
+        nextEnd.toISOString(),
+        taskId,
+        resourceId,
+        originalStart.toISOString(),
+        originalEnd.toISOString()
+    );
+
+    return result.changes > 0;
+}
