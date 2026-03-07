@@ -1,11 +1,10 @@
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { apiGet } from "../api/client";
-import { CreateAssignmentForm } from "../components/CreateAssignmentForm";
-import { CreateAvailabilityForm } from "../components/CreateAvailabilityForm";
 import { DateRangePicker } from "../components/DateRangePicker";
 import { FreeSlotsList } from "../components/FreeSlotsList";
 import { AnalyticsPanel } from "../components/AnalyticsPanel";
+import "../styles/resource-detail.css";
 
 import type { TimeRange } from "../types/TimeRange";
 import type { AvailabilityAnalytics } from "../types/AvailabilityAnalytics";
@@ -64,10 +63,17 @@ export function ResourceDetailPage() {
         return () => clearTimeout(timeout);
     }, [id, from, to]);
 
-    async function fetchAvailability() {
+    async function fetchAvailability(options?: { keepStatus?: boolean; preserveScroll?: boolean }) {
         if (!id || !from || !to) return;
 
-        setStatus("loading");
+        const keepStatus = options?.keepStatus ?? false;
+        const preserveScroll = options?.preserveScroll ?? false;
+
+        const { scrollX, scrollY } = window;
+
+        if (!keepStatus) {
+            setStatus("loading");
+        }
 
         try {
             const result = await apiGet<ResourceResponse>(
@@ -76,44 +82,44 @@ export function ResourceDetailPage() {
 
             setData(result);
             setStatus("success");
+
+            if (preserveScroll) {
+                requestAnimationFrame(() => {
+                    window.scrollTo(scrollX, scrollY);
+                });
+            }
         } catch {
             setStatus("error");
         }
     }
 
     function handleAssignmentCreated() {
-        fetchAvailability();
+        void fetchAvailability({ keepStatus: true, preserveScroll: true });
     }
 
-    if (loading) return <p>Loading resource...</p>;
+    if (loading) return <p className="resource-detail-page">Loading resource...</p>;
     if (!id) return <p>Invalid resource</p>;
 
     return (
-        <div>
-            <h1>{resourceName}</h1>
+        <div className="resource-detail-page">
+            <header className="resource-detail-header">
+                <h1 className="resource-detail-title">{resourceName}</h1>
+                <p className="resource-detail-subtitle">Plan tasks directly on the timeline with drag and right-click actions.</p>
+            </header>
 
-            <CreateAvailabilityForm
-                resourceId={id}
-                onCreated={fetchAvailability}
-            />
-
-            <CreateAssignmentForm
-                resourceId={id}
-                onCreated={handleAssignmentCreated}
-            />
-
-            <DateRangePicker
-                from={from}
-                to={to}
-                onChange={(from, to) => {
-                    setFrom(from);
-                    setTo(to);
-                }}
-
-            />
+            <div className="resource-detail-block">
+                <DateRangePicker
+                    from={from}
+                    to={to}
+                    onChange={(from, to) => {
+                        setFrom(from);
+                        setTo(to);
+                    }}
+                />
+            </div>
 
             {status === "error" && (
-                <p style={{ color: "red" }}>Failed to load availability</p>
+                <p className="resource-detail-error">Failed to load availability</p>
             )}
 
             {status === "success" && data?.analytics && (
@@ -121,12 +127,16 @@ export function ResourceDetailPage() {
                     <AnalyticsPanel analytics={data.analytics} />
                     <FreeSlotsList slots={data.freeSlot} />
 
-                    < GanttTimeline
-                        from={new Date(from)}
-                        to={new Date(to)}
-                        availability={data?.availability}
-                        assignment={data?.assignments}
-                    />
+                    <div className="resource-detail-block">
+                        < GanttTimeline
+                            resourceId={id}
+                            from={new Date(from)}
+                            to={new Date(to)}
+                            availability={data?.availability}
+                            assignment={data?.assignments}
+                            onAssignmentCreated={handleAssignmentCreated}
+                        />
+                    </div>
                 </>
             )}
 

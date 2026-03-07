@@ -108,3 +108,30 @@ export function updateAssignmentTime(
 
     return result.changes > 0;
 }
+
+export function deleteAssignmentTime(
+    taskId: string,
+    resourceId: string,
+    start: Date,
+    end: Date
+): boolean {
+    const result = db.prepare<
+        [string, string, string, string],
+        void
+    >(
+        `
+        DELETE FROM assignments
+        WHERE task_id = ?
+        AND resource_id = ?
+        AND start = ?
+        AND end = ?
+        `
+    ).run(
+        taskId,
+        resourceId,
+        start.toISOString(),
+        end.toISOString()
+    );
+
+    return result.changes > 0;
+}

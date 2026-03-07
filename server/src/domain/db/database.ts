@@ -3,7 +3,6 @@ import * as BetterSqlite3 from 'better-sqlite3';
 
 const DatabaseConstructor = BetterSqlite3.default;
 
-// Use in-memory database for tests, file database for production
 const dbPath = process.env.VITEST || process.env.NODE_ENV === 'test'
     ? ':memory:'
     : 'planner.db';

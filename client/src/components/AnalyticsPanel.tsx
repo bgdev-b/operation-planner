@@ -1,4 +1,5 @@
 import type { AvailabilityAnalytics } from "../types/AvailabilityAnalytics";
+import "../styles/analytics.css";
 
 type Props = {
     analytics: AvailabilityAnalytics;
@@ -19,29 +20,41 @@ export function AnalyticsPanel({ analytics }: Props) {
         return `${hours}h ${mins}m`;
     }
 
+    const safeUtilization = Math.max(0, Math.min(100, utilizationPercentage));
+
     return (
-        <div style={{ marginTop: "1.5rem", padding: "1rem", border: "1px solid #ddd" }}>
-            <h3>Analytics</h3>
+        <section className="analytics-panel">
+            <h3 className="analytics-title">Analytics</h3>
 
-            <p>Total Capacity: {formatMinutes(totalCapacityMinutes)}</p>
-            <p>Busy Time: {formatMinutes(totalBusyMinutes)}</p>
-            <p>Free Time: {formatMinutes(totalFreeMinutes)} </p>
-            <p>Utilization: {utilizationPercentage}%</p>
+            <div className="analytics-grid">
+                <div className="analytics-metric">
+                    <span className="analytics-label">Total Capacity</span>
+                    <span className="analytics-value">{formatMinutes(totalCapacityMinutes)}</span>
+                </div>
 
-            <div style={{
-                height: "12px",
-                background: "#eee",
-                marginTop: "10px",
-                position: "relative"
-            }}>
-                <div style={{
-                    width: `${utilizationPercentage}%`,
-                    height: "100%",
-                    background: "#3b82f6"
-                }}>
+                <div className="analytics-metric">
+                    <span className="analytics-label">Busy Time</span>
+                    <span className="analytics-value">{formatMinutes(totalBusyMinutes)}</span>
+                </div>
 
+                <div className="analytics-metric">
+                    <span className="analytics-label">Free Time</span>
+                    <span className="analytics-value">{formatMinutes(totalFreeMinutes)}</span>
+                </div>
+
+                <div className="analytics-metric">
+                    <span className="analytics-label">Utilization</span>
+                    <span className="analytics-value">{safeUtilization}%</span>
                 </div>
             </div>
-        </div>
+
+            <p className="analytics-progress-label">Utilization</p>
+            <div className="analytics-progress-track">
+                <div
+                    className="analytics-progress-fill"
+                    style={{ width: `${safeUtilization}%` }}
+                />
+            </div>
+        </section>
     );
 }

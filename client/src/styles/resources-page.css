@@ -1,0 +1,133 @@
+.resources-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.9rem 1rem 1.25rem;
+    display: grid;
+    gap: 0.8rem;
+}
+
+.resources-panel {
+    border: 1px solid #1f3a2b;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #0f1411 0%, #0a0d0b 100%);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+    padding: 1rem;
+}
+
+.resources-hero {
+    padding: 1rem 1rem 0.9rem;
+}
+
+.resources-title {
+    margin: 0;
+    color: #8df2b0;
+    font-size: 2rem;
+}
+
+.resources-subtitle {
+    margin: 0.35rem 0 0;
+    color: #9bb9aa;
+    font-size: 0.95rem;
+}
+
+.resources-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.7rem;
+}
+
+.resources-section-title {
+    margin: 0;
+    color: #8df2b0;
+    font-size: 1.02rem;
+}
+
+.resources-count {
+    color: #9bb9aa;
+    font-size: 0.84rem;
+}
+
+.resources-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+}
+
+.resource-item {
+    margin: 0;
+}
+
+.resource-link {
+    border: 1px solid #1f3a2b;
+    border-radius: 10px;
+    background: #111a15;
+    padding: 0.7rem 0.8rem;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    text-decoration: none;
+    transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.resource-link:hover {
+    border-color: #62e695;
+    background: #15251c;
+    transform: translateY(-1px);
+}
+
+.resource-link-main {
+    min-width: 0;
+    display: grid;
+}
+
+.resource-name {
+    color: #ebfff4;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resource-type {
+    color: #9ac8ad;
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.resource-cta {
+    color: #7ef5ae;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.resources-empty {
+    margin: 0;
+    color: #9bb9aa;
+}
+
+.resources-error {
+    border-color: #572424;
+    background: #2b1010;
+    color: #ffb4b4;
+}
+
+@media (max-width: 760px) {
+    .resources-page {
+        padding: 0.7rem;
+    }
+
+    .resources-title {
+        font-size: 1.6rem;
+    }
+
+    .resource-link {
+        padding: 0.65rem 0.7rem;
+    }
+}

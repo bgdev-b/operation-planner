@@ -3,7 +3,7 @@ import { z } from "zod";
 import { assignmentDtoSchema } from "./dto/assignmentDto.js";
 import { toAssignment } from "./dto/toAssignment.js";
 import { getResourceById } from "../db/resourceRepository.js";
-import { getAssignmentForResource, saveAssignment, updateAssignmentTime } from "../db/assignmentRepository.js";
+import { deleteAssignmentTime, getAssignmentForResource, saveAssignment, updateAssignmentTime } from "../db/assignmentRepository.js";
 import { validateAssignment } from "../ValidateAssignment.js";
 import { getAvailabilityByResource } from "../db/availabilityRepository.js";
 
@@ -122,3 +122,45 @@ assignmentRouter.patch('/:taskId', (req, res, next) => {
         return next(error);
     }
 })
+
+const deleteAssignmentSchema = z.object({
+    resourceId: z.string().min(1),
+    start: z.iso.datetime(),
+    end: z.iso.datetime()
+});
+
+assignmentRouter.delete('/:taskId', (req, res, next) => {
+    try {
+        const { taskId } = req.params;
+        const parsed = deleteAssignmentSchema.safeParse(req.body);
+
+        if (!parsed.success) {
+            return res.status(400).json({
+                error: 'Invalid input',
+                details: z.treeifyError(parsed.error)
+            });
+        }
+
+        const { resourceId, start, end } = parsed.data;
+
+        const resource = getResourceById(resourceId);
+        if (!resource) {
+            return res.status(404).json({ error: 'Resource not found' });
+        }
+
+        const deleted = deleteAssignmentTime(
+            taskId,
+            resourceId,
+            new Date(start),
+            new Date(end)
+        );
+
+        if (!deleted) {
+            return res.status(404).json({ error: 'Assignment not found' });
+        }
+
+        return res.status(200).json({ success: true });
+    } catch (error) {
+        return next(error);
+    }
+});

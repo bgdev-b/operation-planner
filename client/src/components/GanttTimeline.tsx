@@ -1,25 +1,30 @@
 import { useState, useEffect, useRef } from "react";
-import { usePinch } from "@use-gesture/react";
 import type { TimeRange } from "../types/TimeRange";
 import "../styles/gantt.css";
 import { generateTimeTicks } from "../utils/TimeScale";
 import type { Assignment } from "../types/Assignments";
-import { minutes, days, snapTo } from "../utils/time";
+import { minutes, days } from "../utils/time";
+import { useAssignmentDrag } from "../hooks/useAssignmentDrag";
+import { useTimelineZoom } from "../hooks/useTimelineZoom";
 
 
 type Props = {
+    resourceId: string;
     from: Date;
     to: Date;
     availability: TimeRange[];
     assignment: Assignment[];
+    onAssignmentCreated?: () => void | Promise<void>;
 }
 
 
 export function GanttTimeline({
+    resourceId,
     from,
     to,
     availability,
-    assignment
+    assignment,
+    onAssignmentCreated,
 }: Props) {
 
     const fromMs = from.getTime();
@@ -31,18 +36,39 @@ export function GanttTimeline({
 
 
     const [now, setNow] = useState(new Date());
-    const [zoom, setZoom] = useState(1);
     const [scrollLeft, setScrollLeft] = useState(0);
-    const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
-    const [localAssignment, setLocalAssignment] = useState<Assignment[]>(assignment);
-
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const zoomRef = useRef(1);
-    const dragStartX = useRef(0);
-    const dragOriginalRange = useRef<TimeRange | null>(null);
+    const [isAwaitingTaskId, setIsAwaitingTaskId] = useState(false);
+    const [newTaskId, setNewTaskId] = useState("");
+    const [createError, setCreateError] = useState<string | null>(null);
+    const [contextMenu, setContextMenu] = useState<{ x: number; y: number; index: number } | null>(null);
+    const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
     const baseWidth = 1200;
+    const { zoom, containerRef, bindPinch } = useTimelineZoom({ baseWidth });
     const timelineWidth = baseWidth * zoom;
+
+    const {
+        localAssignment,
+        draggingIndex,
+        creationRange,
+        isCreating,
+        startDrag,
+        startResize,
+        beginCreate,
+        updateCreate,
+        cancelCreate,
+        commitCreate,
+        deleteAssignmentByIndex,
+    } = useAssignmentDrag({
+        assignment,
+        resourceId,
+        fromMs,
+        toMs,
+        totalRangeMs,
+        timelineWidth,
+        snapMs: SNAP,
+        onAssignmentCreated,
+    });
 
     function formatTick(tick: Date) {
         if (multipleDays) {
@@ -63,73 +89,45 @@ export function GanttTimeline({
         return { left, width };
     }
 
-    function handleMouseDown(
-        e: React.MouseEvent,
-        index: number,
-        range: TimeRange
-    ) {
-        dragStartX.current = e.clientX;
-        dragOriginalRange.current = range;
-        setDraggingIndex(index);
-    }
-
-    useEffect(() => {
-        setLocalAssignment(assignment);
-    }, [assignment]);
-
     useEffect(() => {
         const interval = setInterval(() => setNow(new Date()), 60_000);
         return () => clearInterval(interval);
     }, []);
 
+    function formatRange(start: string, end: string) {
+        const s = new Date(start);
+        const e = new Date(end);
+
+        return `${s.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${e.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    }
+
+    function getMouseTimelineMs(clientX: number) {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const mouseX = clientX - rect.left + containerRef.current.scrollLeft;
+        return fromMs + (mouseX / timelineWidth) * totalRangeMs;
+    }
+
+    function handleAvailabilityMouseDown(e: React.MouseEvent) {
+        e.preventDefault();
+        setCreateError(null);
+        setIsAwaitingTaskId(false);
+        const clickedMs = getMouseTimelineMs(e.clientX);
+        if (clickedMs === undefined) return;
+        beginCreate(clickedMs);
+    }
+
     useEffect(() => {
-        if (draggingIndex === null) return;
+        if (!isCreating || isAwaitingTaskId) return;
 
         function handleMouseMove(e: MouseEvent) {
-            if (!dragOriginalRange.current || draggingIndex === null) return;
-
-            const deltaPx = e.clientX - dragStartX.current;
-            const deltaMs = deltaPx * (totalRangeMs / timelineWidth);
-
-            const original = dragOriginalRange.current;
-            const duration = new Date(original.end).getTime() - new Date(original.start).getTime();
-
-            const rawStart = new Date(original.start).getTime() + deltaMs;
-
-            const snappedStart = snapTo(rawStart, SNAP);
-
-            const newStartMs = Math.max(fromMs, Math.min(toMs - duration,
-                snappedStart
-            ));
-            const newEndMs = newStartMs + duration;
-
-            setLocalAssignment(prev => {
-                const updated = [...prev];
-
-                const isConflict = updated.some((other, i) => {
-                    if (i === draggingIndex) return false;
-
-                    const otherStart = new Date(other.start).getTime();
-                    const otherEnd = new Date(other.end).getTime();
-
-                    return overlpas(newStartMs, newEndMs, otherStart, otherEnd);
-                });
-
-                if (isConflict) {
-                    return prev;
-                }
-
-                updated[draggingIndex] = {
-                    ...updated[draggingIndex],
-                    start: new Date(newStartMs).toISOString(),
-                    end: new Date(newEndMs).toISOString(),
-                };
-                return updated;
-            });
+            const atMs = getMouseTimelineMs(e.clientX);
+            if (atMs === undefined) return;
+            updateCreate(atMs);
         }
 
         function handleMouseUp() {
-            setDraggingIndex(null);
+            setIsAwaitingTaskId(true);
         }
 
         window.addEventListener("mousemove", handleMouseMove);
@@ -139,51 +137,108 @@ export function GanttTimeline({
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [draggingIndex, totalRangeMs, timelineWidth, fromMs, toMs]);
+    }, [isCreating, isAwaitingTaskId, timelineWidth, totalRangeMs, fromMs, updateCreate]);
 
-    function formatRange(start: string, end: string) {
-        const s = new Date(start);
-        const e = new Date(end);
+    async function handleCreateConfirm() {
+        setCreateError(null);
 
-        return `
-            ${s.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -
-            ${e.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        `;
-    }
-
-    function overlpas(aStart: number, aEnd: number, bStart: number, bEnd: number) {
-        return Math.max(aStart, bStart) < Math.min(aEnd, bEnd);
-    }
-
-    const bindPinch = usePinch(
-        ({ origin: [ox], offset: [scale], memo, first, event }) => {
-            event?.preventDefault();
-            if (!containerRef.current) return;
-
-            const initZoom: number = first ? zoomRef.current : memo;
-            const newZoom = Math.min(Math.max(initZoom * scale, 0.5), 5);
-
-            const container = containerRef.current;
-            const { left: rectLeft } = container.getBoundingClientRect();
-            const mouseX = ox - rectLeft;
-            const offsetX = mouseX + container.scrollLeft;
-
-            const prevWidth = baseWidth * zoomRef.current;
-            const newWidth = baseWidth * newZoom;
-            container.scrollLeft = offsetX * (newWidth / prevWidth) - mouseX;
-
-            zoomRef.current = newZoom;
-            setZoom(newZoom);
-
-            return initZoom;
-        },
-        {
-            pinchOnWheel: true,
-            preventDefault: true,
-            pointer: { touch: true },
-            eventOptions: { passive: false }
+        if (!newTaskId.trim()) {
+            setCreateError("Task ID is required.");
+            return;
         }
-    );
+
+        const windowScrollX = window.scrollX;
+        const windowScrollY = window.scrollY;
+        const timelineScrollLeft = containerRef.current?.scrollLeft ?? 0;
+
+        try {
+            const created = await commitCreate(newTaskId);
+            if (!created) {
+                setCreateError("Could not create: the range is invalid or conflicts with an existing assignment.");
+                return;
+            }
+
+            requestAnimationFrame(() => {
+                window.scrollTo(windowScrollX, windowScrollY);
+                if (containerRef.current) {
+                    containerRef.current.scrollLeft = timelineScrollLeft;
+                }
+            });
+
+            setNewTaskId("");
+            setIsAwaitingTaskId(false);
+        } catch {
+            setCreateError("Could not create assignment.");
+        }
+    }
+
+    function handleTaskIdKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            void handleCreateConfirm();
+            return;
+        }
+
+        if (e.key === "Escape") {
+            e.preventDefault();
+            handleCreateCancel();
+        }
+    }
+
+    function handleCreateCancel() {
+        cancelCreate();
+        setNewTaskId("");
+        setCreateError(null);
+        setIsAwaitingTaskId(false);
+    }
+
+    function handleAssignmentRightClick(e: React.MouseEvent, index: number) {
+        e.preventDefault();
+        setContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            index,
+        });
+    }
+
+    async function handleContextDelete() {
+        if (!contextMenu) return;
+
+        setCreateError(null);
+
+        try {
+            await deleteAssignmentByIndex(contextMenu.index);
+            setContextMenu(null);
+        } catch {
+            setCreateError("Could not delete assignment.");
+            setContextMenu(null);
+        }
+    }
+
+    useEffect(() => {
+        if (!contextMenu) return;
+
+        function handleGlobalMouseDown(e: MouseEvent) {
+            if (contextMenuRef.current?.contains(e.target as Node)) {
+                return;
+            }
+            setContextMenu(null);
+        }
+
+        function handleGlobalKeyDown(e: KeyboardEvent) {
+            if (e.key === "Escape") {
+                setContextMenu(null);
+            }
+        }
+
+        window.addEventListener("mousedown", handleGlobalMouseDown);
+        window.addEventListener("keydown", handleGlobalKeyDown);
+
+        return () => {
+            window.removeEventListener("mousedown", handleGlobalMouseDown);
+            window.removeEventListener("keydown", handleGlobalKeyDown);
+        };
+    }, [contextMenu]);
 
     const nowMs = now.getTime();
     const isNowVisible = nowMs >= fromMs && nowMs <= toMs;
@@ -197,6 +252,45 @@ export function GanttTimeline({
 
     return (
         <div className="gantt-wrapper">
+            {contextMenu && (
+                <div
+                    ref={contextMenuRef}
+                    className="assignment-context-menu"
+                    style={{
+                        left: `${contextMenu.x}px`,
+                        top: `${contextMenu.y}px`,
+                    }}
+                >
+                    <button
+                        type="button"
+                        className="assignment-context-delete"
+                        onClick={() => void handleContextDelete()}
+                    >
+                        Delete task
+                    </button>
+                </div>
+            )}
+            {isAwaitingTaskId && creationRange && (
+                <div className="create-assignment-panel">
+                    <label className="create-assignment-label" htmlFor="new-task-id-input">
+                        Task ID
+                    </label>
+                    <input
+                        id="new-task-id-input"
+                        className="create-assignment-input"
+                        value={newTaskId}
+                        onChange={(e) => setNewTaskId(e.target.value)}
+                        onKeyDown={handleTaskIdKeyDown}
+                        placeholder="Example: TASK-123"
+                        autoFocus
+                    />
+                    {createError && <div className="create-assignment-error">{createError}</div>}
+                    <div className="create-assignment-actions">
+                        <button type="button" onClick={handleCreateConfirm}>Create</button>
+                        <button type="button" onClick={handleCreateCancel}>Cancel</button>
+                    </div>
+                </div>
+            )}
             {labelVisible && (
                 <div
                     className="now-label-above"
@@ -270,6 +364,7 @@ export function GanttTimeline({
                                         left: `${left}px`,
                                         width: `${width}px`
                                     }}
+                                    onMouseDown={handleAvailabilityMouseDown}
                                 />
                             );
                         })}
@@ -278,7 +373,8 @@ export function GanttTimeline({
                             const { left, width } = getPosition(slot);
                             return (
                                 <div
-                                    onMouseDown={(e) => handleMouseDown(e, i, slot)}
+                                    onMouseDown={(e) => startDrag(e, i, slot)}
+                                    onContextMenu={(e) => void handleAssignmentRightClick(e, i)}
                                     key={`assignment-${i}`}
                                     className={`gantt-assignment ${draggingIndex === i ? 'dragging' : ""}`}
                                     style={{
@@ -291,9 +387,32 @@ export function GanttTimeline({
                                         {" "}
                                         {formatRange(slot.start, slot.end)}
                                     </span>
+
+                                    <div
+                                        className="resize-handle start"
+                                        onMouseDown={(e) => startResize(e, i, slot, "start")}
+                                    />
+                                    <div
+                                        className="resize-handle end"
+                                        onMouseDown={(e) => startResize(e, i, slot, "end")}
+                                    />
+
                                 </div>
                             );
                         })}
+
+                        {creationRange && (() => {
+                            const { left, width } = getPosition(creationRange);
+                            return (
+                                <div
+                                    className="gantt-creation-preview"
+                                    style={{
+                                        left: `${left}px`,
+                                        width: `${width}px`,
+                                    }}
+                                />
+                            );
+                        })()}
 
                     </div>
                 </div>

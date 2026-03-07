@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { getResourceById, getAllResources, saveResource } from "../db/resourceRepository.js";
-import { getAvailabilityByResource } from "../db/availabilityRepository.js";
+import { createAvailabilitySlot, getAvailabilityByResource } from "../db/availabilityRepository.js";
 import { freeSlotQuerySchema } from "./dto/freeSlotQuery.schema.js";
 import { getAssignmentForResource } from "../db/assignmentRepository.js";
 import { calculateAvailability } from "../CalculateAvailability.js";
@@ -30,6 +30,16 @@ resourceRouter.post("/", (req, res) => {
     }
 
     saveResource(parsed.data);
+
+    const existingAvailability = getAvailabilityByResource(parsed.data.id);
+    if (existingAvailability.length === 0) {
+        createAvailabilitySlot(
+            parsed.data.id,
+            new Date("2000-01-01T00:00:00.000Z"),
+            new Date("2100-01-01T00:00:00.000Z")
+        );
+    }
+
     return res.status(201).json(parsed.data);
 });
 
