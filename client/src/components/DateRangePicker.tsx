@@ -118,26 +118,6 @@ export function DateRangePicker({
                 <button type="button" onClick={() => applyPreset("next7")}>Next 7 Days</button>
             </div>
 
-            <div className="date-range-field">
-                <span className="date-range-label">From Time</span>
-                <input
-                    className="date-range-input"
-                    type="time"
-                    value={getTimePart(from, "09:00")}
-                    onChange={(e) => handleFromTimeChange(e.target.value)}
-                />
-            </div>
-
-            <div className="date-range-field">
-                <span className="date-range-label">To Time</span>
-                <input
-                    className="date-range-input"
-                    type="time"
-                    value={getTimePart(to, "18:00")}
-                    onChange={(e) => handleToTimeChange(e.target.value)}
-                />
-            </div>
-
             <div className="date-range-calendar">
                 <DayPicker
                     mode="range"
@@ -145,6 +125,28 @@ export function DateRangePicker({
                     onSelect={handleRangeSelect}
                     showOutsideDays
                 />
+            </div>
+
+            <div className="date-range-times">
+                <div className="date-range-field">
+                    <span className="date-range-label">From Time</span>
+                    <input
+                        className="date-range-input"
+                        type="time"
+                        value={getTimePart(from, "09:00")}
+                        onChange={(e) => handleFromTimeChange(e.target.value)}
+                    />
+                </div>
+
+                <div className="date-range-field">
+                    <span className="date-range-label">To Time</span>
+                    <input
+                        className="date-range-input"
+                        type="time"
+                        value={getTimePart(to, "18:00")}
+                        onChange={(e) => handleToTimeChange(e.target.value)}
+                    />
+                </div>
             </div>
         </div>
     )

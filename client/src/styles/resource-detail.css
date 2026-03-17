@@ -40,24 +40,32 @@
 
 .date-range-picker {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: minmax(120px, 150px) minmax(320px, auto) minmax(200px, 240px);
+    align-items: start;
+    width: min(100%, 840px);
+    max-width: 100%;
+    margin: 0 auto;
+    gap: 0.9rem;
 }
 
 .date-range-field {
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
+    min-width: 0;
 }
 
 .date-range-presets {
-    grid-column: 1 / -1;
+    grid-column: 1;
+    grid-row: 1;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.5rem;
 }
 
 .date-range-presets button {
+    width: 100%;
     padding: 0.4rem 0.65rem;
     border-radius: 999px;
     border: 1px solid #2d5a42;
@@ -81,6 +89,7 @@
     border-radius: 8px;
     background: #111a15;
     color: #ecfff3;
+    width: 100%;
     padding: 0.55rem 0.65rem;
     box-shadow: none;
     color-scheme: dark;
@@ -103,8 +112,9 @@
 }
 
 .date-range-calendar {
-    grid-column: 1 / -1;
-    justify-self: start;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
     width: fit-content;
     max-width: 100%;
     padding: 0.75rem;
@@ -196,6 +206,14 @@
     background: #183826;
 }
 
+.date-range-times {
+    grid-column: 3;
+    grid-row: 1;
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+}
+
 .free-slots {
     margin-top: 0.7rem;
     padding: 1rem;
@@ -238,7 +256,32 @@
     }
 
     .date-range-picker {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        margin: 0;
+    }
+
+    .date-range-presets {
+        grid-column: 1;
+        grid-row: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .date-range-presets button {
+        width: auto;
+    }
+
+    .date-range-calendar {
+        grid-column: 1;
+        grid-row: auto;
+        justify-self: start;
+    }
+
+    .date-range-times {
+        grid-column: 1;
+        grid-row: auto;
     }
 
     .resource-detail-page {

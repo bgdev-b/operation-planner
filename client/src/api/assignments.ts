@@ -1,10 +1,12 @@
+import { apiFetch } from "./client";
+
 export async function createAssignment(
     taskId: string,
     resourceId: string,
     start: string,
     end: string
 ) {
-    const response = await fetch("/api/assignments", {
+    const response = await apiFetch("/api/assignments", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -32,7 +34,7 @@ export async function updateAssignment(
     start: string,
     end: string
 ) {
-    const response = await fetch(`/api/assignments/${taskId}`, {
+    const response = await apiFetch(`/api/assignments/${taskId}`, {
         method: 'PATCH',
         headers: {
             'Content-type': 'application/json',
@@ -59,7 +61,7 @@ export async function deleteAssignment(
     start: string,
     end: string
 ) {
-    const response = await fetch(`/api/assignments/${taskId}`, {
+    const response = await apiFetch(`/api/assignments/${taskId}`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",

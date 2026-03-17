@@ -32,32 +32,6 @@ export function createAvailabilitySlot(
     };
 }
 
-export function updateAvailabilitySlot(
-    id: number,
-    start: Date,
-    end: Date
-): void {
-
-    db.prepare(
-        `UPDATE resource_availability
-        SET start = ?, end = ?
-        WHERE id = ?`
-    ).run(
-        start.toISOString(),
-        end.toISOString(),
-        id
-    );
-}
-
-export function deleteAvailabilitySlot(
-    id: number
-): void {
-    db.prepare(
-        `DELETE FROM resource_availability
-        WHERE id = ?`
-    ).run(id);
-}
-
 export function getAvailabilityByResource(
     resourceId: string
 ): AvailabilitySlot[] {

@@ -23,6 +23,24 @@ type ResourceResponse = {
 
 type Status = "idle" | "loading" | "success" | "error";
 
+type ApiError = Error & {
+    data?: {
+        error?: string;
+        message?: string;
+    };
+};
+
+function getApiErrorMessage(error: unknown) {
+    if (error && typeof error === "object") {
+        const apiError = error as ApiError;
+        if (apiError.data?.message) return apiError.data.message;
+        if (apiError.data?.error) return apiError.data.error;
+        if (apiError.message) return apiError.message;
+    }
+
+    return "Failed to load availability";
+}
+
 export function ResourceDetailPage() {
     const { id } = useParams<{ id: string }>();
 
@@ -34,6 +52,7 @@ export function ResourceDetailPage() {
 
     const [data, setData] = useState<ResourceResponse | null>(null);
     const [status, setStatus] = useState<Status>("idle");
+    const [errorMessage, setErrorMessage] = useState("Failed to load availability");
 
     useEffect(() => {
         if (!id) return;
@@ -46,6 +65,7 @@ export function ResourceDetailPage() {
         if (!id || !from || !to) return;
 
         setStatus('loading');
+        setErrorMessage("Failed to load availability");
 
         const timeout = setTimeout(async () => {
             try {
@@ -54,8 +74,10 @@ export function ResourceDetailPage() {
                 );
 
                 setData(result);
+                setErrorMessage("Failed to load availability");
                 setStatus('success')
-            } catch {
+            } catch (error: unknown) {
+                setErrorMessage(getApiErrorMessage(error));
                 setStatus('error')
             }
         }, 300);
@@ -73,6 +95,7 @@ export function ResourceDetailPage() {
 
         if (!keepStatus) {
             setStatus("loading");
+            setErrorMessage("Failed to load availability");
         }
 
         try {
@@ -81,6 +104,7 @@ export function ResourceDetailPage() {
             );
 
             setData(result);
+            setErrorMessage("Failed to load availability");
             setStatus("success");
 
             if (preserveScroll) {
@@ -88,7 +112,8 @@ export function ResourceDetailPage() {
                     window.scrollTo(scrollX, scrollY);
                 });
             }
-        } catch {
+        } catch (error: unknown) {
+            setErrorMessage(getApiErrorMessage(error));
             setStatus("error");
         }
     }
@@ -119,7 +144,7 @@ export function ResourceDetailPage() {
             </div>
 
             {status === "error" && (
-                <p className="resource-detail-error">Failed to load availability</p>
+                <p className="resource-detail-error">{errorMessage}</p>
             )}
 
             {status === "success" && data?.analytics && (

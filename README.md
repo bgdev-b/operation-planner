@@ -32,9 +32,28 @@ The app combines a timeline-first UI with strict backend validation, so every mo
 ```text
 .
 |- client/   React app (UI, timeline interactions, analytics)
+|- docs/     Portfolio media (screenshots and GIF)
 |- server/   Express API (validation, persistence, scheduling logic)
 `- README.md
 ```
+
+## Demo Media
+
+Add your screenshots and GIF to `docs/media/` using these file names:
+
+- `01-home-resources.png`
+- `02-resource-detail-overview.png`
+- `03-create-drag-assignment.png`
+- `04-assignment-actions.png`
+- `planner-flow.gif`
+
+Then this section will render directly on GitHub:
+
+![Operation Planner flow](docs/media/planner-flow.gif)
+![Resources Home](docs/media/01-home-resources.png)
+![Resource Detail Overview](docs/media/02-resource-detail-overview.png)
+![Create Assignment by Drag](docs/media/03-create-drag-assignment.png)
+![Assignment Actions](docs/media/04-assignment-actions.png)
 
 ## Quick Start
 
