@@ -144,7 +144,13 @@ export function useAssignmentDrag({
                     original.end,
                     moved.start,
                     moved.end
-                ).catch(console.error);
+                )
+                    .then(async () => {
+                        if (onAssignmentCreated) {
+                            await onAssignmentCreated();
+                        }
+                    })
+                    .catch(console.error);
             }
 
             setDraggingIndex(null);
@@ -159,7 +165,7 @@ export function useAssignmentDrag({
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [draggingIndex, resizeMode, totalRangeMs, timelineWidth, fromMs, toMs, snapMs]);
+    }, [draggingIndex, resizeMode, totalRangeMs, timelineWidth, fromMs, toMs, snapMs, onAssignmentCreated]);
 
     function startDrag(e: ReactMouseEvent, index: number, range: TimeRange) {
         dragStartX.current = e.clientX;
