@@ -39,17 +39,17 @@ The app combines a timeline-first UI with strict backend validation, so every mo
 
 ## Demo Media
 
-Add your screenshots and flow video to `docs/media/` using these file names:
+Add your screenshots and GIF to `docs/media/` using these file names:
 
 - `01-home-resources.png`
 - `02-resource-detail-overview.png`
 - `03-create-drag-assignment.png`
 - `04-assignment-actions.png`
-- `planner-flow.mp4`
+- `planner-flow.gif`
 
 Then this section will render directly on GitHub:
 
-[Watch Operation Planner flow video](docs/media/planner-flow.mp4)
+![Operation Planner flow](docs/media/planner-flow.gif)
 ![Resources Home](docs/media/01-home-resources.png)
 ![Resource Detail Overview](docs/media/02-resource-detail-overview.png)
 ![Create Assignment by Drag](docs/media/03-create-drag-assignment.png)
